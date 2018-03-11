@@ -2,9 +2,12 @@
 
 from collections import defaultdict
 
+from testbed import SoftfireSRv6Router
+
 import argparse
 import sys
 import os
+import json
 
 parser_path = "../dreamer-topology-parser-and-validator/"
 if parser_path == "":
@@ -22,37 +25,27 @@ def topo(topology):
   # First parse the json file
   verbose = True
   if verbose:
-    print "*** Build Topology from parsed file"
+    print "*** Building Topology from parsed file"
   parser = SRv6TopoParser(topology, verbose = False)
   parser.parse_data()
 
   # Get back the parsed data
-  testbed = parser.testbed
-  tunneling = parser.tunneling
+  testbed = SoftfireSRv6Router(parser.tunneling)
   routers = parser.routers
-  routers_properties = parser.routers_properties
+  p_routers_properties = parser.routers_properties
   core_links = parser.core_links
 
-  # Let' s properties generator
+  # Creates properties generator
   generator = PropertiesGenerator()
 
+  print "*** Generating configuration parameters"
   # Second step is the generation of the nodes parameters
   routers_properties = generator.getRouterProperties(routers)
-
-  # Debug prints
-  for router_properties in routers_properties:
-    if verbose:
-      print router_properties
 
   # Third step is the generation of the links parameters
   core_links_properties = []
   for core_link in parser.core_links:
     core_links_properties.append(generator.getLinksProperties([core_link]))
-
-  # Debug prints
-  for core_link_properties in core_links_properties:
-    if verbose:
-      print core_link_properties[0]
 
   # Then VNFs related parameters
   vnfs_properties = defaultdict(list)
@@ -61,13 +54,6 @@ def topo(topology):
     r_vnf_properties = generator.getVNFsProperties(vnfs)
     vnfs_properties[router] = r_vnf_properties
 
-  # Debug prints
-  for router in routers:
-    r_vnf_properties = vnfs_properties[router]
-    for vnf_properties in r_vnf_properties:
-      if verbose:
-        print vnf_properties
-
   # Finally TERMs related parameters
   ters_properties = defaultdict(list)
   for router in routers:
@@ -75,12 +61,38 @@ def topo(topology):
     r_ter_properties = generator.getTERsProperties(ters)
     ters_properties[router] = r_ter_properties
 
-  # Debug prints
-  for router in routers:
-    r_ter_properties = ters_properties[router]
-    for ter_properties in r_ter_properties:
-      if verbose:
-        print ter_properties
+  print "*** Adding SRv6 routers"
+  i = 0
+  # Add router to the testbed
+  for router_properties in routers_properties:
+    router = routers[i]
+    vnf_properties = vnfs_properties[router]
+    ter_properties = ters_properties[router]
+    router_properties = routers_properties[i]
+    p_router_properties = p_routers_properties[i]
+    p_router_properties['loopback'] = router_properties.loopback
+    p_router_properties['routerid'] = router_properties.routerid
+    testbed.addSRv6Router(
+      router,
+      p_router_properties,
+      vnf_properties,
+      ter_properties,
+    )
+    i = i + 1;
+
+  print "*** Adding core links"
+  i = 0;
+  # Add core links to the testbed
+  for core_link_properties in core_links_properties:
+    link = core_links[i]
+    testbed.addCoreLink(
+      link,
+      core_link_properties[0]
+    )
+    i = i + 1
+
+  print "*** Generating configuration files"
+  #testbed.configure()
 
 # Parse cmd line
 def parse_cmd_line():
