@@ -1,29 +1,36 @@
-# README #
+# SoftFIRE TIESR Deployer  #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+This project is for creating virtual networks to emulate SRv6 
 
-### What is this repository for? ###
+### Prerequisite ###
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+This project depends on Dreamer-Topology-Parser
 
-### How do I get set up? ###
+    > cd /home/user/workspace/
+    > git clone https://pierventre@bitbucket.org/ssalsano/dreamer-topology-parser-and-validator.git
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+Then it is necessary to properly set the path in the softfire-tiesr-deployer project
 
-### Contribution guidelines ###
+    > cd /home/user/workspace/softfire-tiesr-deployer
+    > parser_path = "/home/user/workspace/dreamer-topology-parser-and-validator/"
 
-* Writing tests
-* Code review
-* Other guidelines
+### Run an example experiment ###
 
-### Who do I talk to? ###
+    > cd /home/user/workspace/softfire-tiesr-deployer
 
-* Repo owner or admin
-* Other community or team contact
+--help for usage options
+
+    Usage: softfire-tiesr-deployer.py [options]
+
+    Options:
+    -h, --help            show this help message and exit
+    --topology=TOPOLOGY   Topology file
+
+You can build configuration files of a topology just providing a topology file (relative path)
+
+    > ./softfire-tiesr-deployer.py --topology topo/example_srv6_topology.json
+
+
+The generated files are in the cfg folder: 
+
+    > cat /home/user/workspace/softfire-tiesr-deployer/cfg/*.cfg

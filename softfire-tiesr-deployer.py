@@ -47,19 +47,17 @@ def topo(topology):
   for core_link in parser.core_links:
     core_links_properties.append(generator.getLinksProperties([core_link]))
 
-  # Then VNFs related parameters
+  # Finally VNFs and TERMs related parameters
   vnfs_properties = defaultdict(list)
+  ters_properties = defaultdict(list)
+  default_routes = {}
   for router in routers:
     vnfs = parser.getVNF(router)
-    r_vnf_properties = generator.getVNFsProperties(vnfs)
-    vnfs_properties[router] = r_vnf_properties
-
-  # Finally TERMs related parameters
-  ters_properties = defaultdict(list)
-  for router in routers:
     ters = parser.getTER(router)
-    r_ter_properties = generator.getTERsProperties(ters)
+    [r_vnf_properties, r_ter_properties, net] = generator.getVNFsTERMsProperties(vnfs, ters)
+    vnfs_properties[router] = r_vnf_properties
     ters_properties[router] = r_ter_properties
+    default_routes[router] = net
 
   print "*** Adding SRv6 routers"
   i = 0
@@ -68,6 +66,7 @@ def topo(topology):
     router = routers[i]
     vnf_properties = vnfs_properties[router]
     ter_properties = ters_properties[router]
+    default_route = default_routes[router]
     router_properties = routers_properties[i]
     p_router_properties = p_routers_properties[i]
     p_router_properties['loopback'] = router_properties.loopback
@@ -77,6 +76,7 @@ def topo(topology):
       p_router_properties,
       vnf_properties,
       ter_properties,
+      default_route
     )
     i = i + 1;
 

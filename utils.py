@@ -133,7 +133,7 @@ class NetAllocator(object):
     return n_net
 
 # Allocates subnets for the ters
-class VNFAllocator(object):
+class VNFandTERMAllocator(object):
 
   bit = 16
   
@@ -143,30 +143,18 @@ class VNFAllocator(object):
     self.net = unicode("fd%s::/%s" % (hex_string, self.bit))
 
     print "*** Calculating Available VNFs Networks"
-    self.ipv6net = (IPv6Network(self.net)).subnets(new_prefix=32)
+    self.vnf_net = (IPv6Network(self.net)).subnets(new_prefix=32)
     for i in range(0, 241):
-      next(self.ipv6net)
-
-  def next_netAddress(self):
-    n_net = next(self.ipv6net)
-    return n_net
-
-# Allocates subnets for the ters
-class TERMAllocator(object):
-
-  bit = 16
-  
-  def __init__(self, base):
-    hex_string = format(base, '#04x')
-    hex_string = hex_string[2:]
-    self.net = unicode("fd%s::/%s" % (hex_string, self.bit))
+      next(self.vnf_net)
 
     print "*** Calculating Available TERMs Networks"
-    self.ipv6net = (IPv6Network(self.net)).subnets(new_prefix=32)
-    next(self.ipv6net)
+    self.term_net = (IPv6Network(self.net)).subnets(new_prefix=32)
+    next(self.term_net)
 
-  def next_netAddress(self):
-    n_net = next(self.ipv6net)
+  def next_vnfNetAddress(self):
+    n_net = next(self.vnf_net)
     return n_net
 
-
+  def next_termNetAddress(self):
+    n_net = next(self.term_net)
+    return n_net
