@@ -107,9 +107,9 @@ class PropertiesGenerator(object):
   def getVNFsTERMsProperties(self, vnfs, terms):
     output_vnfs = []
     output_terms = []
-    if vnfs > 0 or terms > 0:
-      allocator = VNFandTERMAllocator(self.allocated)
-      self.allocated = self.allocated + 1
+    #if vnfs > 0 or terms > 0:
+    allocator = VNFandTERMAllocator(self.allocated)
+    self.allocated = self.allocated + 1
 
     for i in range(1, vnfs + 1):
       vnf_net = allocator.next_vnfNetAddress()

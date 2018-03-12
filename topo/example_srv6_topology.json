@@ -1,22 +1,22 @@
 {
    "edges":[
       {
-         "source":"ads1",
-         "target":"ads2",
+         "source":"ADS1",
+         "target":"ADS2",
          "group": "",
          "view": "Data",
          "type": "Core"
       },
       {
-         "source":"ads1",
-         "target":"sur1",
+         "source":"ADS1",
+         "target":"surrey1",
          "group": "",
          "view": "Data",
          "type": "Core"
       },
       {
-         "source":"ads2",
-         "target":"sur1",
+         "source":"surrey1",
+         "target":"surrey2",
          "group": "",
          "view": "Data",
          "type": "Core"
@@ -29,13 +29,13 @@
         "property": {
            "vnf": 3,
            "ter": 1,
-           "floating_ip": "172.20.0.1",
-           "internal_ip": "192.168.10.1",
+           "floating_ip": "172.20.70.42",
+           "internal_ip": "192.168.213.5",
            "vim": "ADS"
         },
         "group": [200]
       },
-      "id": "ads1"
+      "id": "ADS1"
      },
      {
       "info": {
@@ -43,13 +43,13 @@
         "property": {
            "vnf": 1,
            "ter": 1,
-           "floating_ip": "172.20.0.2",
-           "internal_ip": "192.168.10.2",
+           "floating_ip": "172.20.70.7",
+           "internal_ip": "192.168.213.9",
            "vim": "ADS"
         },
         "group": [200]
       },
-      "id": "ads2"
+      "id": "ADS2"
      },
      {
       "info": {
@@ -57,13 +57,27 @@
         "property": {
            "vnf": 1,
            "ter": 1,
-           "floating_ip": "172.20.0.3",
-           "internal_ip": "192.168.10.3",
+           "floating_ip": "172.20.18.183",
+           "internal_ip": "192.168.18.12",
            "vim": "SURREY"
         },
         "group": [200]
       },
-      "id": "sur1"
+      "id": "surrey1"
+     },
+          {
+      "info": {
+        "type": "Router",
+        "property": {
+           "vnf": 0,
+           "ter": 0,
+           "floating_ip": "172.20.18.183",
+           "internal_ip": "192.168.18.18",
+           "vim": "ADS"
+        },
+        "group": [200]
+      },
+      "id": "surrey2"
      }
    ],
    "graph_parameters":{

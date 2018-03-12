@@ -9,7 +9,7 @@ class Intf:
 # Loopback interface
 class LoIntf(Intf):
   
-  def __init__(self, ip, name="LOOPBACK", netbit=128, hello_int=1, cost=1):
+  def __init__(self, ip, name="LOOPBACK", netbit=128, hello_int=2, cost=1):
     Intf.__init__(self,name)
     self.ip = ip
     self.netbit = netbit
@@ -17,7 +17,7 @@ class LoIntf(Intf):
     self.cost = cost
   
   def serialize(self):
-    return "declare -a %s=(%s/%s %s %s)\n" %(self.name, self.ip, self.netbit, self.cost, self.hello_int)
+    return "declare -a %s=(%s/%s %s %s LBN)\n" %(self.name, self.ip, self.netbit, self.cost, self.hello_int)
 
   def __str__(self):
     return "{'name':'%s', 'ip':'%s', 'netbit':'%s', 'hello_int':'%s', 'cost':'%s'}" \
