@@ -31,15 +31,15 @@ class VNFProperties(object):
   intf = "eth0"
   bit = 32
 
-  def __init__(self, _id, ip, via, br):
-    self.id = _id
+  def __init__(self, ip, via, br, net):
     self.ip = ip
     self.via = via
     self.br = br
+    self.net = net
 
   def __str__(self):
-    return "{'type':'%s', 'id': '%s', layer':'%s', 'via':'%s', 'bit': '%s', 'ip':'%s', 'intf:'%s', 'br':'%s'}"  \
-    %(self.vnf_type, self.id, self.layer, self.via, self.bit, self.ip, self.intf, self.br)
+    return "{'type':'%s', 'layer':'%s', 'via':'%s', 'bit': '%s', 'ip':'%s', 'intf:'%s', 'br':'%s', 'net':'%s'}"  \
+    %(self.vnf_type, self.id, self.layer, self.via, self.bit, self.ip, self.intf, self.br, self.net)
 
 # Encapsulate vnf properties
 class TERProperties(object):
@@ -47,13 +47,14 @@ class TERProperties(object):
   bit = 32
   intf = "eth0"
 
-  def __init__(self, ip, via):
+  def __init__(self, ip, via, net):
     self.ip = ip
     self.via = via
+    self.net = net
 
   def __str__(self):
-    return "{'ip':'%s/%s', 'intf:'%s', 'via':'%s/%s'}"  \
-    %(self.ip, self.bit, self.intf, self.via, self.bit)
+    return "{'ip':'%s/%s', 'intf:'%s', 'via':'%s/%s', 'net':'%s'}"  \
+    %(self.ip, self.bit, self.intf, self.via, self.bit, self.net)
 
 # Generator of 
 class PropertiesGenerator(object):
@@ -63,8 +64,7 @@ class PropertiesGenerator(object):
     self.loopbackAllocator = LoopbackAllocator()
     self.routerIdAllocator = RouterIdAllocator()
     self.netAllocator = NetAllocator()
-    self.vnfAllocator = VNFAllocator()
-    self.terAllocator = TERAllocator()
+    self.allocated = 1
 
   # Generater for router properties
   def getRouterProperties(self, nodes):
@@ -106,53 +106,50 @@ class PropertiesGenerator(object):
   # Generator for vnf properties  
   def getVNFsProperties(self, vnfs):
     output = []
-    net = self.vnfAllocator.next_netAddress()
+    if vnfs > 0:
+      vnfAllocator = VNFAllocator(self.allocated)
+      self.allocated = self.allocated + 1
 
-    
-    if self.verbose == True:    
-      print net
+      if self.verbose == True:    
+        print net
 
-    vnf_nets = net.subnets(new_prefix=48)
-    if self.verbose == True:    
-      print vnf_nets
+      for i in range(1, vnfs+1):
+        vnf_net = vnfAllocator.next_netAddress()
+        hosts = vnf_net.hosts()
 
-    for i in range(1, vnfs+1):
-      vnf_net = next(vnf_nets)
-      hosts = vnf_net.hosts()
+        ip = next(hosts).__str__()
+        for j in range(0, 252):
+          next(hosts)
+        via = next(hosts).__str__()
+        br = "br%s" % i
 
-      _id = "vnf%d" % i
-      ip = next(hosts).__str__()
-      via = next(hosts).__str__()
-      br = "br%s" % i
-
-      vnfproperties = VNFProperties(_id, ip, via, br)
-      if self.verbose == True:      
-        print vnfproperties
-      output.append(vnfproperties)
+        vnfproperties = VNFProperties(ip, via, br, vnf_net.__str__())
+        if self.verbose == True:      
+          print vnfproperties
+        output.append(vnfproperties)
     return output
 
       # Generator for ter properties  
   def getTERsProperties(self, ters):
     output = []
-    net = self.terAllocator.next_netAddress()
+    if ters > 0:
+      termAllocator = TERMAllocator(self.allocated)
+      self.allocated = self.allocated + 1
+      
+      if self.verbose == True:    
+        print net
 
-    
-    if self.verbose == True:    
-      print net
+      for i in range(1, ters+1):
+        ter_net = termAllocator.next_netAddress()
+        hosts = ter_net.hosts()
 
-    ter_nets = net.subnets(new_prefix=48)
-    if self.verbose == True:    
-      print ter_nets
+        ip = next(hosts).__str__()
+        for j in range(0, 252):
+          next(hosts)
+        via = next(hosts).__str__()
 
-    for i in range(1, ters+1):
-      ter_net = next(ter_nets)
-      hosts = ter_net.hosts()
-
-      ip = next(hosts).__str__()
-      via = next(hosts).__str__()
-
-      terproperties = TERProperties(ip, via)
-      if self.verbose == True:      
-        print terproperties
-      output.append(terproperties)
+        terproperties = TERProperties(ip, via, ter_net.__str__())
+        if self.verbose == True:      
+          print terproperties
+        output.append(terproperties)
     return output

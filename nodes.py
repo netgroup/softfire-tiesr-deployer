@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from interfaces import LoIntf, TapVXLANIntf, TapOpenVPNIntf
-from utils import OSPFNetwork, EndIP
+from utils import OSPFNetwork, EndIP, VNF, TERM
 
 import sys
 
@@ -41,13 +41,82 @@ class SRv6Router(Host):
     self.nameToNets = {}
     self.ospfNetBase = 1
 
-    # Save general, vnfs and terms properties
-    self.properties = properties
-    self.vnfs = vnfs
-    self.terms = terms
+    # Save vnfs 
+    self.vnfs = []
+    self.nameToVNFs = {}
+    self.vnfBase = 1
+    self.vnfNetBase = 1
+    for vnf in vnfs:
+      self.addVNF(vnf)
 
-    # Create Loopback interface
+    # Save terms 
+    self.terms = []
+    self.nameToTERMs = {}
+    self.termBase = 1
+    self.termNetBase = 1
+    for term in terms:
+      self.addTERM(term)
+
+    # Create Loopback interface and save router id
     self.loopback = self.addLoopback(properties['loopback'])
+    self.routerid = properties['routerid']
+
+  # Utility function to create a new TER
+  # OSPFNet name
+  def newTERMNetName(self):
+    ret = self.termNetBase
+    self.termNetBase = self.termNetBase + 1
+    return "TNE%s" % ret 
+
+  # Utility function to create a new TER name
+  def newTERMName(self):
+    ret = self.termBase
+    self.termBase = self.termBase + 1
+    return "TER%s" % ret 
+
+  # Utility function to create a new VNF
+  def addTERM(self, property):
+    name = self.newTERMName()
+    term = TERM(
+      name, 
+      property.ip,
+      property.via,
+      property.net
+    )
+    termnet = OSPFNetwork(name, property.net)
+    self.addOSPFNet(termnet, "TERM")
+    self.terms.append(term)
+    self.nameToTERMs[name] = term
+    return term
+
+  # Utility function to create a new VNF
+  # OSPFNet name
+  def newVNFNetName(self):
+    ret = self.vnfNetBase
+    self.vnfNetBase = self.vnfNetBase + 1
+    return "VNE%s" % ret 
+
+  # Utility function to create a new VNF name
+  def newVNFName(self):
+    ret = self.vnfBase
+    self.vnfBase = self.vnfBase + 1
+    return "VNF%s" % ret 
+
+  # Utility function to create a new VNF
+  def addVNF(self, property):
+    name = self.newVNFName()
+    vnf = VNF(
+      name, 
+      property.ip,
+      property.via,
+      property.br,
+      property.net
+    )
+    vnfnet = OSPFNetwork(name, property.net)
+    self.addOSPFNet(vnfnet, "VNF")
+    self.vnfs.append(vnf)
+    self.nameToVNFs[name] = vnf
+    return vnf
 
   # Utility function to create a new Link
   # OSPFNet name
@@ -122,8 +191,7 @@ class SRv6Router(Host):
     name = self.newTapName()
     # Let's create the proper endpoint
     remote_ip = param[0]
-    local_eth = param[1]
-    endip = self.addEndIP(remote_ip, local_eth)
+    endip = self.addEndIP(remote_ip)
     # According to the tunneling mechanism
     # we are going to create the right tap
     net = param[4]
@@ -155,14 +223,84 @@ class SRv6Router(Host):
     return "endip%s" % ret
 
   # Add a new end ip object
-  def addEndIP(self, remoteIP, localIntf):
+  def addEndIP(self, remoteIP):
     name = self.newEndIPName()
-    endip = EndIP(name, remoteIP, localIntf)
+    endip = EndIP(name, remoteIP, self.intf)
     self.endips.append(endip)
     self.nameToEndIps[name] = endip
     return endip
 
+  # Utility method to serialize all the taps
+  def tapsSerialization(self):
+    return "declare -a TAP=(" + " ".join("%s" % tap.name for tap in self.taps) + ")\n"
 
-   
+  # Utility method to serialize all the taps
+  def ospfnetsSerialization(self):
+    return "declare -a OSPFNET=(" + " ".join("%s" % net.name for net in self.ospfnets) + ")\n"
 
+  # Utility method to serialize all the vnfs
+  def vnfsSerialization(self):
+    return "declare -a VNF=(" + " ".join("%s" % vnf.name for vnf in self.vnfs) + ")\n"
 
+  # Utility method to serialize all the vnfs
+  def termsSerialization(self):
+    return "declare -a TER=(" + " ".join("%s" % term.name for term in self.terms) + ")\n"
+
+  # Utility method to serialize all the vnfs
+  def routesSerialization(self):
+    serialize = "declare -a DEFAULT_ROUTES=(" + " ".join("%s" % vnf.net for vnf in self.vnfs)
+    if len(self.terms) > 0 and len(self.vnfs) > 0:
+      serialize = serialize + " "
+    serialize = serialize + "".join("%s" % term.net for term in self.terms) + ")\n"
+    return serialize
+
+  # Create configuration file for the router
+  def configure(self, params=[]):
+    # Retrieve params
+    testbed = params[0]
+    tunneling = params[1]
+    # Create the file and bash macro
+    cfg = open('cfg/%s.cfg' % self.name,'w')
+    cfg.write("#!/bin/bash\n")
+    # Let's write the general options
+    cfg.write("TESTBED=%s\n" % testbed)
+    cfg.write("TUNNELING=%s\n" % tunneling)
+    cfg.write("ROUTERPWD=srv6\n")
+    cfg.write("ROUTERID=%s\n\n" % self.routerid)
+    # Write the loopback
+    cfg.write(self.loopback.serialize())
+
+    # Write the tap information on the cfg
+    cfg.write(self.tapsSerialization())
+    for tap in self.taps:
+      cfg.write(tap.serialize())
+
+    # Write the endips
+    for endip in self.endips:
+      cfg.write(endip.serialize())
+
+    cfg.write("\n")
+
+    # Write the OSPF information on the cfg
+    cfg.write(self.ospfnetsSerialization())
+    for ospfnet in self.ospfnets:
+      cfg.write(ospfnet.serialize())
+
+    if len(self.vnfs) > 0:
+      cfg.write("\n")
+      # Write the VNF information on the cfg
+      cfg.write(self.vnfsSerialization())
+      for vnf in self.vnfs:
+        cfg.write(vnf.serialize())
+
+    if len(self.terms) > 0:
+      cfg.write("\n")
+      # Write the VNF information on the cfg
+      cfg.write(self.termsSerialization())
+      for term in self.terms:
+        cfg.write(term.serialize())
+
+    if len(self.vnfs) > 0 or len(self.terms) > 0:
+      cfg.write("\n")
+      # Write the STA information on the cfg
+      cfg.write(self.routesSerialization())

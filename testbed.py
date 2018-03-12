@@ -90,16 +90,16 @@ class SoftfireSRv6Router( object ):
     rhs_ospf_net = copy.deepcopy(ospf_net)
 
     # Add the interfaces to the nodes
-    (lhs_tap, lhs_ospf_net) = lhs.addIntf(
-      [rhs_eth_ip, lhs_tap_port,
+    (lhs_tap, lhs_ospf_net) = lhs.addIntf([
+      rhs_eth_ip, lhs_tap_port,
       rhs_tap_port, vni,
-      lhs_ospf_net, lhs_ip]
-    )
-    (rhs_tap, rhs_ospf_net) = rhs.addIntf(
-      [lhs_eth_ip, rhs_tap_port, 
+      lhs_ospf_net, lhs_ip
+    ])
+    (rhs_tap, rhs_ospf_net) = rhs.addIntf([
+      lhs_eth_ip, rhs_tap_port, 
       lhs_tap_port, vni,
-      rhs_ospf_net, rhs_ip]
-    )
+      rhs_ospf_net, rhs_ip
+    ])
 
     # Done, return the useful interfaces
     return [(lhs_tap, lhs_ospf_net), (rhs_tap, rhs_ospf_net)]
@@ -116,7 +116,7 @@ class SoftfireSRv6Router( object ):
       return self.nodesToIIP[remote.name]
 
     # Otherwise we have to use the floating ip
-    return self.nodesToFIP[local.name]
+    return self.nodesToFIP[remote.name]
 
   # Allocate a new VNI
   def newVNI(self):
@@ -146,8 +146,11 @@ class SoftfireSRv6Router( object ):
     self.ospfBase = self.ospfBase + 1
     return "NET%s" % ret
 
-
-
-    
-
-    
+  # Create ocnfiguration files for the nodes
+  def configure(self):
+    # Iterates over the SRv6 routers and call configure
+    for srv6Router in self.srv6Routers:
+      srv6Router.configure([
+        "SOFTFIRE",
+        self.tunneling
+      ])

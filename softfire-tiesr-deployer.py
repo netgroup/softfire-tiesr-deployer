@@ -92,7 +92,7 @@ def topo(topology):
     i = i + 1
 
   print "*** Generating configuration files"
-  #testbed.configure()
+  testbed.configure()
 
 # Parse cmd line
 def parse_cmd_line():
