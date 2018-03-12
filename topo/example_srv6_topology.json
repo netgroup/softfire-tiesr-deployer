@@ -28,7 +28,7 @@
         "type": "Router",
         "property": {
            "vnf": 3,
-           "ter": 0,
+           "ter": 1,
            "floating_ip": "172.20.0.1",
            "internal_ip": "192.168.10.1",
            "vim": "ADS"
@@ -41,7 +41,7 @@
       "info": {
         "type": "Router",
         "property": {
-           "vnf": 0,
+           "vnf": 1,
            "ter": 1,
            "floating_ip": "172.20.0.2",
            "internal_ip": "192.168.10.2",
@@ -55,7 +55,7 @@
       "info": {
         "type": "Router",
         "property": {
-           "vnf": 0,
+           "vnf": 1,
            "ter": 1,
            "floating_ip": "172.20.0.3",
            "internal_ip": "192.168.10.3",

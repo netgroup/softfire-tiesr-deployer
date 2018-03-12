@@ -103,53 +103,43 @@ class PropertiesGenerator(object):
       output.append(linkproperties)
     return output
 
-  # Generator for vnf properties  
-  def getVNFsProperties(self, vnfs):
-    output = []
-    if vnfs > 0:
-      vnfAllocator = VNFAllocator(self.allocated)
+  # Generator for vnf and term properties  
+  def getVNFsTERMsProperties(self, vnfs, terms):
+    output_vnfs = []
+    output_terms = []
+    if vnfs > 0 or terms > 0:
+      allocator = VNFandTERMAllocator(self.allocated)
       self.allocated = self.allocated + 1
 
-      if self.verbose == True:    
-        print net
+    for i in range(1, vnfs + 1):
+      vnf_net = allocator.next_vnfNetAddress()
+      hosts = vnf_net.hosts()
 
-      for i in range(1, vnfs+1):
-        vnf_net = vnfAllocator.next_netAddress()
-        hosts = vnf_net.hosts()
+      ip = next(hosts).__str__()
+      for j in range(0, 252):
+        next(hosts)
+      via = next(hosts).__str__()
+      br = "br%s" % i
 
-        ip = next(hosts).__str__()
-        for j in range(0, 252):
-          next(hosts)
-        via = next(hosts).__str__()
-        br = "br%s" % i
+      vnfproperties = VNFProperties(ip, via, br, vnf_net.__str__())
+      if self.verbose == True:      
+        print vnfproperties
+      output_vnfs.append(vnfproperties)
 
-        vnfproperties = VNFProperties(ip, via, br, vnf_net.__str__())
-        if self.verbose == True:      
-          print vnfproperties
-        output.append(vnfproperties)
-    return output
+    for i in range(1, terms + 1):
+      term_net = allocator.next_termNetAddress()
+      hosts = term_net.hosts()
 
-      # Generator for ter properties  
-  def getTERsProperties(self, ters):
-    output = []
-    if ters > 0:
-      termAllocator = TERMAllocator(self.allocated)
-      self.allocated = self.allocated + 1
-      
-      if self.verbose == True:    
-        print net
+      ip = next(hosts).__str__()
+      for j in range(0, 252):
+        next(hosts)
+      via = next(hosts).__str__()
 
-      for i in range(1, ters+1):
-        ter_net = termAllocator.next_netAddress()
-        hosts = ter_net.hosts()
+      termproperties = TERProperties(ip, via, term_net.__str__())
+      if self.verbose == True:      
+        print termproperties
+      output_terms.append(termproperties)
 
-        ip = next(hosts).__str__()
-        for j in range(0, 252):
-          next(hosts)
-        via = next(hosts).__str__()
+    return [output_vnfs, output_terms, allocator.net]
 
-        terproperties = TERProperties(ip, via, ter_net.__str__())
-        if self.verbose == True:      
-          print terproperties
-        output.append(terproperties)
-    return output
+

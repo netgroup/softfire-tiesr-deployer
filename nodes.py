@@ -32,9 +32,12 @@ class SRv6Router(Host):
 
   intf = "eth0"
 
-  def __init__( self, name, tunneling, properties, vnfs, terms):
+  def __init__( self, name, tunneling, properties, vnfs, terms, default_route):
     # Init Host object
     Host.__init__(self, name, properties['floating_ip'], tunneling)
+
+    # Save default_route
+    self.default_route = default_route
 
     # Init objects related to OSPF networks
     self.ospfnets = []
@@ -248,11 +251,7 @@ class SRv6Router(Host):
 
   # Utility method to serialize all the vnfs
   def routesSerialization(self):
-    serialize = "declare -a DEFAULT_ROUTES=(" + " ".join("%s" % vnf.net for vnf in self.vnfs)
-    if len(self.terms) > 0 and len(self.vnfs) > 0:
-      serialize = serialize + " "
-    serialize = serialize + "".join("%s" % term.net for term in self.terms) + ")\n"
-    return serialize
+    return "declare -a STATIC_ROUTES=("  + self.default_route + ")\n"
 
   # Create configuration file for the router
   def configure(self, params=[]):
