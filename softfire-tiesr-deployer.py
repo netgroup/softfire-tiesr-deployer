@@ -20,7 +20,8 @@ from generator import PropertiesGenerator
 
 # Build Topology from json file and as output of the computation
 # build configuration files for the experiment
-def topo(topology):
+# device_if should be a property of the router
+def topo(topology, default_device_if):
 
   # First parse the json file
   verbose = True
@@ -76,7 +77,8 @@ def topo(topology):
       p_router_properties,
       vnf_properties,
       ter_properties,
-      static_route
+      static_route,
+      default_device_if
     )
     i = i + 1;
 
@@ -99,6 +101,7 @@ def parse_cmd_line():
   # We just have the topology as cmd line parameter
   parser = argparse.ArgumentParser(description='Softfire TIESR Deployer')
   parser.add_argument('--topology', dest='topoInfo', action='store', default='topo:topo1.json', help='topo:param see README for further details')
+  parser.add_argument('--default_dev_if', dest='defDevIf', action='store', default='ens3', help='topo:param see README for further details')
   # Check params number
   args = parser.parse_args()  
   if len(sys.argv)==1:
@@ -106,8 +109,9 @@ def parse_cmd_line():
         sys.exit(1)
     # Return the topology name
   topo_data = args.topoInfo 
-  return (topo_data)
+  def_device_if = args.defDevIf
+  return (topo_data, def_device_if)
 
 if __name__ == '__main__':
-  (topology) = parse_cmd_line()
-  topo(topology)
+  (topology, def_device_if) = parse_cmd_line()
+  topo(topology, def_device_if)

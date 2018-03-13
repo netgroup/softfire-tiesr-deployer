@@ -34,7 +34,7 @@ class SoftfireSRv6Router( object ):
     return self.nameToNode[key]
 
   # Add a new router to the testbed
-  def addSRv6Router(self, router, properties, vnfs, terms, static_routes):
+  def addSRv6Router(self, router, properties, vnfs, terms, static_routes, device_if):
     print "*** Adding router", router
 
     # Add mapping node to vim
@@ -53,7 +53,8 @@ class SoftfireSRv6Router( object ):
       properties,
       vnfs,
       terms,
-      static_routes
+      static_routes,
+      device_if
     )
 
     # Let's save it in the list of the routers

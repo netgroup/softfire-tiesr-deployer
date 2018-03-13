@@ -30,11 +30,13 @@ class Host(object):
 # SRv6 based router
 class SRv6Router(Host):
 
-  intf = "eth0"
+  #intf = "eth0"
 
-  def __init__( self, name, tunneling, properties, vnfs, terms, static_routes):
+  def __init__( self, name, tunneling, properties, vnfs, terms, static_routes, device_if):
     # Init Host object
     Host.__init__(self, name, properties['floating_ip'], tunneling)
+
+    self.device_if = device_if
 
     # Save static_routes
     self.static_routes = static_routes
@@ -228,7 +230,7 @@ class SRv6Router(Host):
   # Add a new end ip object
   def addEndIP(self, remoteIP):
     name = self.newEndIPName()
-    endip = EndIP(name, remoteIP, self.intf)
+    endip = EndIP(name, remoteIP, self.device_if)
     self.endips.append(endip)
     self.nameToEndIps[name] = endip
     return endip
