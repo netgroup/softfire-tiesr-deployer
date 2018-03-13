@@ -21,7 +21,7 @@ from generator import PropertiesGenerator
 # Build Topology from json file and as output of the computation
 # build configuration files for the experiment
 # device_if should be a property of the router
-def topo(topology, default_device_if):
+def topo(topology, default_device_if, ob_notification):
 
   # First parse the json file
   verbose = True
@@ -102,6 +102,7 @@ def parse_cmd_line():
   parser = argparse.ArgumentParser(description='Softfire TIESR Deployer')
   parser.add_argument('--topology', dest='topoInfo', action='store', default='topo:topo1.json', help='topo:param see README for further details')
   parser.add_argument('--default_dev_if', dest='defDevIf', action='store', default='ens3', help='topo:param see README for further details')
+  parser.add_argument('--ob_notification', dest='OB_notif', action='store', default='openbaton.json', help='topo:param see README for further details')
   # Check params number
   args = parser.parse_args()  
   if len(sys.argv)==1:
@@ -110,8 +111,9 @@ def parse_cmd_line():
     # Return the topology name
   topo_data = args.topoInfo 
   def_device_if = args.defDevIf
-  return (topo_data, def_device_if)
+  ob_notification = OB_notif
+  return (topo_data, def_device_if, OB_notif)
 
 if __name__ == '__main__':
-  (topology, def_device_if) = parse_cmd_line()
-  topo(topology, def_device_if)
+  (topology, def_device_if, ob_notification) = parse_cmd_line()
+  topo(topology, def_device_if, ob_notification)
