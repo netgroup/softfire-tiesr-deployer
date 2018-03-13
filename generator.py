@@ -2,6 +2,11 @@
 
 from utils import *
 
+DEFAULT_VNF_TERM_LAYER="L3"
+DEFAULT_VNF_TERM_IF="eth0"
+DEFAULT_VNF_TERM_BIT=32
+
+
 # Encapsulate router properties
 class RouterProperties(object):
   
@@ -52,16 +57,18 @@ class TERProperties(object):
   #bit = 32
   #intf = "eth0"
 
-  def __init__(self, ip, via, net, bit, intf):
+  def __init__(self, ip, via, br, net, term_type, bit, intf):
     self.ip = ip
     self.via = via
+    self.br = br
     self.net = net
+    self.term_type = term_type
     self.bit = bit
     self.intf = intf
 
   def __str__(self):
-    return "{'ip':'%s/%s', 'intf:'%s', 'via':'%s/%s', 'net':'%s'}"  \
-    %(self.ip, self.bit, self.intf, self.via, self.bit, self.net)
+    return "{'ip':'%s/%s', 'intf:'%s', 'via':'%s/%s', 'net':'%s', 'type':'%s'}"  \
+    %(self.ip, self.bit, self.intf, self.via, self.bit, self.net, self.term_type)
 
 # Generator of 
 class PropertiesGenerator(object):
@@ -112,50 +119,59 @@ class PropertiesGenerator(object):
 
   # Generator for vnf and term properties used to build the testbed object in softfire-tiesr-deployer
   #vnfs and terms will become a list and not anymore an integer
-  def getVNFsTERMsProperties(self, vnfs, terms):
+  def getVNFsTERMsProperties(self, vnfs_and_terms):
     output_vnfs = []
     output_terms = []
     #if vnfs > 0 or terms > 0:
     allocator = VNFandTERMAllocator(self.allocated)
     self.allocated = self.allocated + 1
 
-    for i in range(1, vnfs + 1):
-      vnf_net = allocator.next_vnfNetAddress()
-      hosts = vnf_net.hosts()
+    i_vnf = 1
+    i_term = 1
+    print "********************"
+    print vnfs_and_terms
+    for vnf_or_term, value_dict in vnfs_and_terms.items() :
+      if value_dict['type'] in ['ovnf_netns', 'ovnf_lxdcont'] :
+        vnf_net = allocator.next_vnfNetAddress()
+        hosts = vnf_net.hosts()
 
-      ip = next(hosts).__str__()
-      for j in range(0, 252):
-        next(hosts)
-      via = next(hosts).__str__()
-      br = "br%s" % i
+        ip = next(hosts).__str__()
+        for j in range(0, 252):
+          next(hosts)
+        via = next(hosts).__str__()
+        br = "br%s" % i_vnf
+        i_vnf = i_vnf +1
 
-      vnf_type = "lxd"
-      layer = "L3"
-      intf = "eth0"
-      bit = 32
+        layer = value_dict.get('layer', DEFAULT_VNF_TERM_LAYER)
+        intf = value_dict.get('intf', DEFAULT_VNF_TERM_IF)
+        bit = value_dict.get('bit', DEFAULT_VNF_TERM_BIT)
+
+        vnfproperties = VNFProperties(ip, via, br, vnf_net.__str__(), value_dict['type'], layer, intf, bit)
+        if self.verbose == True:      
+          print vnfproperties
+        output_vnfs.append(vnfproperties)
 
 
-      vnfproperties = VNFProperties(ip, via, br, vnf_net.__str__(), vnf_type, layer, intf, bit)
-      if self.verbose == True:      
-        print vnfproperties
-      output_vnfs.append(vnfproperties)
+      elif value_dict['type'] in ['term_netns', 'term_lxdcont']:
 
-    for i in range(1, terms + 1):
-      term_net = allocator.next_termNetAddress()
-      hosts = term_net.hosts()
 
-      ip = next(hosts).__str__()
-      for j in range(0, 252):
-        next(hosts)
-      via = next(hosts).__str__()
+        term_net = allocator.next_termNetAddress()
+        hosts = term_net.hosts()
 
-      bit = 32
-      intf = "eth0"
+        ip = next(hosts).__str__()
+        for j in range(0, 252):
+          next(hosts)
+        via = next(hosts).__str__()
+        br = "br%s" % i_term
+        i_term = i_term +1
 
-      termproperties = TERProperties(ip, via, term_net.__str__(), bit, intf)
-      if self.verbose == True:      
-        print termproperties
-      output_terms.append(termproperties)
+        bit = value_dict.get('bit', DEFAULT_VNF_TERM_BIT)
+        intf = value_dict.get('intf', DEFAULT_VNF_TERM_IF)
+
+        termproperties = TERProperties(ip, via, br, term_net.__str__(), value_dict['type'], bit, intf)
+        if self.verbose == True:      
+          print termproperties
+        output_terms.append(termproperties)
 
     return [output_vnfs, output_terms, allocator.net]
 

@@ -55,9 +55,11 @@ def topo(topology, default_device_if, ob_notification):
   ters_properties = defaultdict(list)
   static_routes = {}
   for router in routers:
-    vnfs = parser.getVNF(router)
-    ters = parser.getTER(router)
-    [r_vnf_properties, r_ter_properties, net] = generator.getVNFsTERMsProperties(vnfs, ters)
+    #vnfs = parser.getVNF(router)
+    #ters = parser.getTER(router)
+    vnfs_and_ters = parser.getVNFandTERMdict(router)
+
+    [r_vnf_properties, r_ter_properties, net] = generator.getVNFsTERMsProperties(vnfs_and_ters)
     vnfs_properties[router] = r_vnf_properties
     ters_properties[router] = r_ter_properties
     static_routes[router] = net
