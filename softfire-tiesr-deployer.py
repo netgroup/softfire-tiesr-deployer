@@ -27,13 +27,15 @@ def topo(topology, default_device_if, ob_notification):
   verbose = True
   if verbose:
     print "*** Building Topology from parsed file"
-  parser = SRv6TopoParser(topology, verbose = False)
+  parser = SRv6TopoParser(topology, ob_notification, verbose = False)
   parser.parse_data()
 
   # Get back the parsed data
   testbed = SoftfireSRv6Router(parser.tunneling)
   routers = parser.routers
   p_routers_properties = parser.routers_properties
+  p_routers_dict = parser.routers_dict
+  p_ip_addr_map = parser.ip_addr_map
   core_links = parser.core_links
 
   # Creates properties generator
@@ -67,11 +69,17 @@ def topo(topology, default_device_if, ob_notification):
     router = routers[i]
     vnf_properties = vnfs_properties[router]
     ter_properties = ters_properties[router]
+
     static_route = static_routes[router]
     router_properties = routers_properties[i]
     p_router_properties = p_routers_properties[i]
     p_router_properties['loopback'] = router_properties.loopback
     p_router_properties['routerid'] = router_properties.routerid
+
+    #adding IP addresses retrieved from OpenBaton notification
+    p_router_properties['internal_ip'] = p_ip_addr_map[router]['internal_ip']
+    p_router_properties['floating_ip'] = p_ip_addr_map[router]['floating_ip']
+
     testbed.addSRv6Router(
       router,
       p_router_properties,
@@ -99,6 +107,10 @@ def topo(topology, default_device_if, ob_notification):
 # Parse cmd line
 def parse_cmd_line():
   # We just have the topology as cmd line parameter
+  # ./softfire-tiesr-deployer.py --topology topo/linear-2ads-2surrey.json
+  # ./softfire-tiesr-deployer.py --topology ../dreamer-topology-parser-and-validator/rdcl4nodesok.json --ob_notification ../dreamer-topology-parser-and-validator/openbaton_notification.json
+
+
   parser = argparse.ArgumentParser(description='Softfire TIESR Deployer')
   parser.add_argument('--topology', dest='topoInfo', action='store', default='topo:topo1.json', help='topo:param see README for further details')
   parser.add_argument('--default_dev_if', dest='defDevIf', action='store', default='ens3', help='topo:param see README for further details')
@@ -111,8 +123,8 @@ def parse_cmd_line():
     # Return the topology name
   topo_data = args.topoInfo 
   def_device_if = args.defDevIf
-  ob_notification = OB_notif
-  return (topo_data, def_device_if, OB_notif)
+  ob_notification = args.OB_notif
+  return (topo_data, def_device_if, ob_notification)
 
 if __name__ == '__main__':
   (topology, def_device_if, ob_notification) = parse_cmd_line()
