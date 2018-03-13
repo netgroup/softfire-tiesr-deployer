@@ -12,7 +12,7 @@ class RouterProperties(object):
   def __str__(self):
     return "{'loopback':'%s/128', 'routerid': '%s'}" %(self.loopback, self.routerid)
 
-# Encapsulate link properties
+# Encapsulate link properties used to build the testbed object in softfire-tiesr-deployer
 class LinkProperties(object):
 
   def __init__(self, iplhs, iprhs, net):
@@ -23,19 +23,24 @@ class LinkProperties(object):
   def __str__(self):
     return "{'iplhs':'%s', 'iprhs':'%s', net':'%s'}" %(self.iplhs, self.iprhs, self.net)
 
-# Encapsulate vnf properties
+# Encapsulate vnf properties used to build the testbed object in softfire-tiesr-deployer
+# most properties are generated in getVNFsTERMsProperties
 class VNFProperties(object):
 
-  vnf_type = "lxd"
-  layer = "L3"
-  intf = "eth0"
-  bit = 32
+  #vnf_type = "lxd"
+  #layer = "L3"
+  #intf = "eth0"
+  #bit = 32
 
-  def __init__(self, ip, via, br, net):
+  def __init__(self, ip, via, br, net, vnf_type, layer, intf, bit):
     self.ip = ip
     self.via = via
     self.br = br
     self.net = net
+    self.vnf_type = vnf_type
+    self.layer = layer
+    self.intf = intf
+    self.bit = bit
 
   def __str__(self):
     return "{'type':'%s', 'layer':'%s', 'via':'%s', 'bit': '%s', 'ip':'%s', 'intf:'%s', 'br':'%s', 'net':'%s'}"  \
@@ -44,13 +49,15 @@ class VNFProperties(object):
 # Encapsulate vnf properties
 class TERProperties(object):
 
-  bit = 32
-  intf = "eth0"
+  #bit = 32
+  #intf = "eth0"
 
-  def __init__(self, ip, via, net):
+  def __init__(self, ip, via, net, bit, intf):
     self.ip = ip
     self.via = via
     self.net = net
+    self.bit = bit
+    self.intf = intf
 
   def __str__(self):
     return "{'ip':'%s/%s', 'intf:'%s', 'via':'%s/%s', 'net':'%s'}"  \
@@ -103,7 +110,8 @@ class PropertiesGenerator(object):
       output.append(linkproperties)
     return output
 
-  # Generator for vnf and term properties  
+  # Generator for vnf and term properties used to build the testbed object in softfire-tiesr-deployer
+  #vnfs and terms will become a list and not anymore an integer
   def getVNFsTERMsProperties(self, vnfs, terms):
     output_vnfs = []
     output_terms = []
@@ -121,7 +129,13 @@ class PropertiesGenerator(object):
       via = next(hosts).__str__()
       br = "br%s" % i
 
-      vnfproperties = VNFProperties(ip, via, br, vnf_net.__str__())
+      vnf_type = "lxd"
+      layer = "L3"
+      intf = "eth0"
+      bit = 32
+
+
+      vnfproperties = VNFProperties(ip, via, br, vnf_net.__str__(), vnf_type, layer, intf, bit)
       if self.verbose == True:      
         print vnfproperties
       output_vnfs.append(vnfproperties)
@@ -135,7 +149,10 @@ class PropertiesGenerator(object):
         next(hosts)
       via = next(hosts).__str__()
 
-      termproperties = TERProperties(ip, via, term_net.__str__())
+      bit = 32
+      intf = "eth0"
+
+      termproperties = TERProperties(ip, via, term_net.__str__(), bit, intf)
       if self.verbose == True:      
         print termproperties
       output_terms.append(termproperties)

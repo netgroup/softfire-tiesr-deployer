@@ -40,9 +40,10 @@ class OSPFNetwork(object):
   def __str__(self):
     return "{'name':'%s', 'net':'%s', 'area':'%s'}" %(self.name, self.net, self.area)
 
-# VXLAN tap interface for SRv6Router
+# VNF and its interfaces toward the SRv6 router node used in nodes.py
 class VNF(object):
 
+  #TODO we should NOT set these properties again!!
   vnf_type = "lxd"
   layer = "L3"
   intf = "eth0"
@@ -70,7 +71,7 @@ class VNF(object):
     %(self.name, self.vnf_type, self.id, self.layer, self.via, self.bit, self.ip, self.intf, self.br)
 
 
-# VXLAN tap interface for SRv6Router
+# TERM and its interfaces toward the SRv6 router node
 class TERM(object):
 
   intf = "eth0"
