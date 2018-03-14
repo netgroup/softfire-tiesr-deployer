@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from interfaces import LoIntf, TapVXLANIntf, TapOpenVPNIntf
-from utils import OSPFNetwork, EndIP, VNFdata, TERM
+from utils import OSPFNetwork, EndIP, VNF_TERM_data
 
 import sys
 
@@ -79,15 +79,21 @@ class SRv6Router(Host):
     self.termBase = self.termBase + 1
     return "TER%s" % ret 
 
-  # Utility function to create a new VNF
+  # Utility function to create a new TERM
   def addTERM(self, property):
-    name = self.newTERMName()
-    term = TERM(
-      name, 
+    #name = self.newTERMName()
+    term = VNF_TERM_data(
+      property.id, 
       property.ip,
       property.via,
-      property.net
+      property.br,
+      property.net,
+      property.vnf_type,
+      property.layer,
+      property.intf,
+      property.bit
     )
+    name = property.id
     termnet = OSPFNetwork(name, property.net)
     self.addOSPFNet(termnet, "TERM")
     self.terms.append(term)
@@ -111,7 +117,7 @@ class SRv6Router(Host):
   # Utility function to create a new VNF
   def addVNF(self, property):
     #name = self.newVNFName()
-    vnf = VNFdata(
+    vnf = VNF_TERM_data(
       property.id, 
       property.ip,
       property.via,
