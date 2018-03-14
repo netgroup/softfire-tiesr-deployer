@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from interfaces import LoIntf, TapVXLANIntf, TapOpenVPNIntf
-from utils import OSPFNetwork, EndIP, VNF, TERM
+from utils import OSPFNetwork, EndIP, VNFdata, TERM
 
 import sys
 
@@ -107,16 +107,22 @@ class SRv6Router(Host):
     self.vnfBase = self.vnfBase + 1
     return "VNF%s" % ret 
 
+
   # Utility function to create a new VNF
   def addVNF(self, property):
-    name = self.newVNFName()
-    vnf = VNF(
-      name, 
+    #name = self.newVNFName()
+    vnf = VNFdata(
+      property.id, 
       property.ip,
       property.via,
       property.br,
-      property.net
+      property.net,
+      property.vnf_type,
+      property.layer,
+      property.intf,
+      property.bit
     )
+    name = property.id
     vnfnet = OSPFNetwork(name, property.net)
     self.addOSPFNet(vnfnet, "VNF")
     self.vnfs.append(vnf)

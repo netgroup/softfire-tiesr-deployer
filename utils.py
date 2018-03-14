@@ -41,21 +41,26 @@ class OSPFNetwork(object):
     return "{'name':'%s', 'net':'%s', 'area':'%s'}" %(self.name, self.net, self.area)
 
 # VNF and its interfaces toward the SRv6 router node used in nodes.py
-class VNF(object):
+class VNFdata(object):
 
   #TODO we should NOT set these properties again!!
-  vnf_type = "lxd"
-  layer = "L3"
-  intf = "eth0"
-  bit = 32
+  #vnf_type = "lxd"
+  #layer = "L3"
+  #intf = "eth0"
+  #bit = 32
   
-  def __init__(self, name, ip, via, br, net):
+  def __init__(self, name, ip, via, br, net, mytype, layer, intf, bit):
     self.name = name
     self.id = name.lower()
     self.ip = ip
     self.via = via
     self.br = br
     self.net = net
+    self.vnf_type = mytype
+    self.layer = layer
+    self.intf = intf
+    self.bit = bit
+
   
   def serialize(self):
     serialize = "declare -a %s=(%s %s %s_DEV)\n" \
@@ -71,7 +76,7 @@ class VNF(object):
     %(self.name, self.vnf_type, self.id, self.layer, self.via, self.bit, self.ip, self.intf, self.br)
 
 
-# TERM and its interfaces toward the SRv6 router node
+# TERM and its interfaces toward the SRv6 router node used in nodes.py
 class TERM(object):
 
   intf = "eth0"
