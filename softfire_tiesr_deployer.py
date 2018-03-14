@@ -37,6 +37,11 @@ def topo(topology, default_device_if, ob_notification):
   p_routers_dict = parser.routers_dict
   p_ip_addr_map = parser.ip_addr_map
   core_links = parser.core_links
+ 
+  # store ip_addr_map
+  ip_file = open("cfg/ip_addr_map.json", 'w')
+  ip_file.write(json.dumps(p_ip_addr_map))
+  ip_file.close() 
 
   # Creates properties generator
   generator = PropertiesGenerator()
