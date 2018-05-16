@@ -3,23 +3,29 @@
       {
          "source":"ADS1",
          "target":"ADS2",
-         "group": "",
-         "view": "Data",
-         "type": "Core"
+         "info": {
+              "property": {},
+              "group": "",
+              "view": "Data"
+          }
       },
       {
          "source":"ADS1",
          "target":"surrey1",
-         "group": "",
-         "view": "Data",
-         "type": "Core"
+         "info": {
+              "property": {},
+              "group": "",
+              "view": "Data"
+          }
       },
       {
          "source":"surrey1",
          "target":"surrey2",
-         "group": "",
-         "view": "Data",
-         "type": "Core"
+         "info": {
+              "property": {},
+              "group": "",
+              "view": "Data"
+          }
       }
    ],
    "vertices":[
@@ -27,7 +33,7 @@
       "info": {
         "type": "Router",
         "property": {
-           "vnf": 3,
+           "vnf": 2,
            "ter": 1,
            "floating_ip": "172.20.70.42",
            "internal_ip": "192.168.213.5",
@@ -41,7 +47,7 @@
       "info": {
         "type": "Router",
         "property": {
-           "vnf": 1,
+           "vnf": 0,
            "ter": 1,
            "floating_ip": "172.20.70.7",
            "internal_ip": "192.168.213.9",
@@ -73,7 +79,7 @@
            "ter": 0,
            "floating_ip": "172.20.18.183",
            "internal_ip": "192.168.18.18",
-           "vim": "ADS"
+           "vim": "SURREY"
         },
         "group": [200]
       },

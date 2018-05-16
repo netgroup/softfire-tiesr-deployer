@@ -1,5 +1,28 @@
 #!/usr/bin/python
 
+##############################################################################################
+# Copyright (C) 2018 Pier Luigi Ventre - (CNIT and University of Rome "Tor Vergata")
+# Copyright (C) 2018 Stefano Salsano - (CNIT and University of Rome "Tor Vergata")
+# www.uniroma2.it/netgroup - www.cnit.it
+#
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SoftFire deployer for Segment Routing IPv6
+#
+# @author Pier Luigi Ventre <pierventre@hotmail.com>
+# @author Stefano Salsano <stefano.salsano@uniroma2.it>
+
 from collections import defaultdict
 
 from testbed import SoftfireSRv6Router
@@ -9,13 +32,7 @@ import sys
 import os
 import json
 
-parser_path = "../dreamer-topology-parser-and-validator/"
-if parser_path == "":
-  print "Error Set Environment Variable At The Beginning Of File"
-  sys.exit(-2)
-
-sys.path.append(parser_path)
-from srv6_topo_parser import SRv6TopoParser
+from softfire_topo_parser import SoftFireTopoParser
 from generator import PropertiesGenerator
 
 # Build Topology from json file and as output of the computation
@@ -27,16 +44,15 @@ def topo(topology, default_device_if, ob_notification):
   verbose = True
   if verbose:
     print "*** Building Topology from parsed file"
-  parser = SRv6TopoParser(topology, ob_notification, verbose = False)
+  parser = SoftFireTopoParser(topology, ob_notification, verbose = False)
   parser.parse_data()
 
   # Get back the parsed data
-  testbed = SoftfireSRv6Router(parser.tunneling)
-  routers = parser.routers
-  p_routers_properties = parser.routers_properties
-  p_routers_dict = parser.routers_dict
-  p_ip_addr_map = parser.ip_addr_map
-  core_links = parser.core_links
+  testbed = SoftfireSRv6Router(parser.getTunneling())
+  routers = parser.getRouters()
+  p_routers_properties = parser.getRoutersProperties()
+  p_ip_addr_map = parser.getVMMapping()
+  core_links = parser.getCoreLinks()
  
   # store ip_addr_map
   ip_file = open("cfg/ip_addr_map.json", 'w')
@@ -48,11 +64,11 @@ def topo(topology, default_device_if, ob_notification):
 
   print "*** Generating configuration parameters"
   # Second step is the generation of the nodes parameters
-  routers_properties = generator.getRouterProperties(routers)
+  routers_properties = generator.getRoutersProperties(routers)
 
   # Third step is the generation of the links parameters
   core_links_properties = []
-  for core_link in parser.core_links:
+  for core_link in core_links:
     core_links_properties.append(generator.getLinksProperties([core_link]))
 
   # Finally VNFs and TERMs related parameters
@@ -60,8 +76,6 @@ def topo(topology, default_device_if, ob_notification):
   ters_properties = defaultdict(list)
   static_routes = {}
   for router in routers:
-    #vnfs = parser.getVNF(router)
-    #ters = parser.getTER(router)
     vnfs_and_ters = parser.getVNFandTERMdict(router)
 
     [r_vnf_properties, r_ter_properties, net] = generator.getVNFsTERMsProperties(vnfs_and_ters)
@@ -113,11 +127,6 @@ def topo(topology, default_device_if, ob_notification):
 
 # Parse cmd line
 def parse_cmd_line():
-  # We just have the topology as cmd line parameter
-  # ./softfire-tiesr-deployer.py --topology topo/linear-2ads-2surrey.json
-  # ./softfire-tiesr-deployer.py --topology ../dreamer-topology-parser-and-validator/rdcl4nodesok.json --ob_notification ../dreamer-topology-parser-and-validator/openbaton_notification.json
-
-
   parser = argparse.ArgumentParser(description='Softfire TIESR Deployer')
   parser.add_argument('--topology', dest='topoInfo', action='store', default='topo:topo1.json', help='topo:param see README for further details')
   parser.add_argument('--default_dev_if', dest='defDevIf', action='store', default='ens3', help='topo:param see README for further details')

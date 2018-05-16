@@ -1,24 +1,17 @@
 # SoftFIRE TIESR Deployer  #
 
-This project is for creating virtual networks to emulate SRv6 
+This project creates the configuration of virtual networks for testing the SRv6 technology over IAAS like testbeds
 
 ### Prerequisite ###
 
-This project depends on Dreamer-Topology-Parser
+This project depends on [Dreamer Topology Parser and Validator](https://github.com/netgroup/Dreamer-Topology-Parser)
 
-    > cd /home/user/workspace/
-    > git clone https://pierventre@bitbucket.org/ssalsano/dreamer-topology-parser-and-validator.git
-
-Then it is necessary to properly set the path in the softfire-tiesr-deployer project
-
-    > cd /home/user/workspace/softfire-tiesr-deployer
-    > parser_path = "/home/user/workspace/dreamer-topology-parser-and-validator/"
+    > git clone https://github.com/netgroup/Dreamer-Topology-Parser
+    > sudo python setup.py install
 
 ### Run an example experiment ###
 
-    > cd /home/user/workspace/softfire-tiesr-deployer
-
---help for usage options
+**--help** for usage options:
 
     Usage: softfire-tiesr-deployer.py [options]
 
@@ -26,11 +19,18 @@ Then it is necessary to properly set the path in the softfire-tiesr-deployer pro
     -h, --help            show this help message and exit
     --topology=TOPOLOGY   Topology file
 
-You can build configuration files of a topology just providing a topology file (relative path)
+You can obtain the configuration files of a topology just providing a complete topology file (including the mapping):
 
-    > ./softfire-tiesr-deployer.py --topology topo/example_srv6_topology.json
+    > ./softfire-tiesr-deployer.py --topology topo/example_softfire_complete_topology.json
 
+Otherwise you need to provide also the OpenBaton notification file:
+
+    > ./softfire_tiesr_deployer.py --topology topo/example_softfire_topology.json --ob_notification topo/example_openbaton_notification.json
 
 The generated files are in the cfg folder: 
 
-    > cat /home/user/workspace/softfire-tiesr-deployer/cfg/*.cfg
+    > cat cfg/*.cfg
+
+cfg folder includes also the vm-mapping file:
+    
+    > cat cfg/ip_addr_map.json
